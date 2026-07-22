@@ -9,6 +9,7 @@ import { FormField } from "@/components/ui/FormField";
 import { Button } from "@/components/ui/Button";
 import { loginSchema, LoginInput } from "@/lib/validations/auth";
 import { createClient } from "@/lib/supabase/client";
+import { phoneToInternalEmail } from "@/lib/utils/phone";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,13 +24,17 @@ export default function LoginPage() {
     setErroGeral(null);
     const supabase = createClient();
 
+    const email = values.identificador.includes("@")
+      ? values.identificador
+      : phoneToInternalEmail(values.identificador);
+
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: values.email,
+      email,
       password: values.senha,
     });
 
     if (error) {
-      setErroGeral("E-mail ou senha inválidos.");
+      setErroGeral("Telefone ou senha inválidos.");
       return;
     }
 
@@ -52,11 +57,12 @@ export default function LoginPage() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5">
         <FormField
-          label="E-mail"
-          type="email"
-          autoComplete="email"
-          error={errors.email?.message}
-          {...register("email")}
+          label="Telefone"
+          type="tel"
+          placeholder="(19) 90000-0000"
+          autoComplete="tel"
+          error={errors.identificador?.message}
+          {...register("identificador")}
         />
         <FormField
           label="Senha"

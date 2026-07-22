@@ -9,6 +9,7 @@ import { FormField } from "@/components/ui/FormField";
 import { Button } from "@/components/ui/Button";
 import { cadastroSchema, CadastroInput } from "@/lib/validations/auth";
 import { createClient } from "@/lib/supabase/client";
+import { phoneToInternalEmail } from "@/lib/utils/phone";
 
 export default function CadastroPage() {
   const router = useRouter();
@@ -25,7 +26,7 @@ export default function CadastroPage() {
     const supabase = createClient();
 
     const { data, error } = await supabase.auth.signUp({
-      email: values.email,
+      email: phoneToInternalEmail(values.telefone),
       password: values.senha,
       options: {
         data: { nome: values.nome, telefone: values.telefone },
@@ -35,7 +36,7 @@ export default function CadastroPage() {
     if (error) {
       setErroGeral(
         error.message === "User already registered"
-          ? "Já existe uma conta com esse e-mail."
+          ? "Já existe uma conta com esse telefone."
           : "Não foi possível criar sua conta. Tente novamente."
       );
       return;
@@ -52,10 +53,9 @@ export default function CadastroPage() {
   if (aguardandoConfirmacao) {
     return (
       <div className="text-center">
-        <h1 className="font-display text-3xl text-foreground">Confirme seu e-mail</h1>
+        <h1 className="font-display text-3xl text-foreground">Conta criada</h1>
         <p className="mt-4 text-sm leading-relaxed text-foreground/70">
-          Enviamos um link de confirmação para o seu e-mail. Depois de confirmar,
-          você já pode entrar na sua conta.
+          Sua conta foi criada. Entre com seu telefone e senha para continuar.
         </p>
         <Button href="/login" className="mt-6">
           Ir para o login
@@ -85,13 +85,6 @@ export default function CadastroPage() {
           autoComplete="tel"
           error={errors.telefone?.message}
           {...register("telefone")}
-        />
-        <FormField
-          label="E-mail"
-          type="email"
-          autoComplete="email"
-          error={errors.email?.message}
-          {...register("email")}
         />
         <FormField
           label="Senha"
