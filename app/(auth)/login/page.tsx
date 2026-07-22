@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { loginSchema, LoginInput } from "@/lib/validations/auth";
 import { createClient } from "@/lib/supabase/client";
 import { phoneToInternalEmail } from "@/lib/utils/phone";
+import { maskPhone } from "@/lib/utils/phoneMask";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -62,7 +63,14 @@ export default function LoginPage() {
           placeholder="(19) 90000-0000"
           autoComplete="tel"
           error={errors.identificador?.message}
-          {...register("identificador")}
+          {...register("identificador", {
+            onChange: (e) => {
+              const pareceTelefone = /^[\d\s()+-]*$/.test(e.target.value);
+              if (pareceTelefone) {
+                e.target.value = maskPhone(e.target.value);
+              }
+            },
+          })}
         />
         <FormField
           label="Senha"

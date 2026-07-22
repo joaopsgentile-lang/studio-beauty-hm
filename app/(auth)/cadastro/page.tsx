@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { cadastroSchema, CadastroInput } from "@/lib/validations/auth";
 import { createClient } from "@/lib/supabase/client";
 import { phoneToInternalEmail } from "@/lib/utils/phone";
+import { maskPhone } from "@/lib/utils/phoneMask";
 
 export default function CadastroPage() {
   const router = useRouter();
@@ -84,7 +85,11 @@ export default function CadastroPage() {
           placeholder="(19) 90000-0000"
           autoComplete="tel"
           error={errors.telefone?.message}
-          {...register("telefone")}
+          {...register("telefone", {
+            onChange: (e) => {
+              e.target.value = maskPhone(e.target.value);
+            },
+          })}
         />
         <FormField
           label="Senha"
