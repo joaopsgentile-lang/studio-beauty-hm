@@ -3,6 +3,7 @@ export const BUSINESS = {
   tagline: "Design de sobrancelhas",
   address: {
     street: "Rua Pastor Antônio Munhoz, 131",
+    neighborhood: "São Camilo",
     city: "Santa Bárbara D'Oeste - SP",
   },
   whatsapp: "5519981518165",
@@ -23,4 +24,8 @@ export const POLICIES = {
   antecedenciaCancelamentoHoras: 12,
 } as const;
 
-export const SLOT_DURATION_MINUTOS = 40;
+export const PAYMENT_METHODS = ["Dinheiro", "Pix", "Débito", "Crédito"] as const;
+
+// Intervalo entre horários de início oferecidos na agenda (não é mais a
+// duração do serviço, que agora varia por procedimento).
+export const AGENDA_STEP_MINUTOS = 40;

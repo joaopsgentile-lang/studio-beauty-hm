@@ -26,6 +26,23 @@ export async function PATCH(
 
   const { status, data, horario } = parsed.data;
 
+  const { data: atual, error: fetchError } = await supabase
+    .from("appointments")
+    .select("id, service_id, services(duracao_minutos)")
+    .eq("id", id)
+    .single();
+
+  if (fetchError || !atual) {
+    return NextResponse.json({ error: "Agendamento não encontrado." }, { status: 404 });
+  }
+
+  const duracao =
+    (atual as unknown as { services: { duracao_minutos: number } | null }).services
+      ?.duracao_minutos ?? 40;
+
+  const update: AppointmentUpdate = {};
+  if (status) update.status = status;
+
   if (data && horario) {
     if (!isSabado(data)) {
       return NextResponse.json(
@@ -34,40 +51,20 @@ export async function PATCH(
       );
     }
 
-    const disponiveis = await getHorariosDisponiveis(data);
+    const disponiveis = await getHorariosDisponiveis(data, duracao);
     if (!disponiveis.includes(horario)) {
       return NextResponse.json(
         { error: "Esse horário não está disponível." },
         { status: 409 }
       );
     }
-  }
 
-  const { data: atual, error: fetchError } = await supabase
-    .from("appointments")
-    .select("id, service_id")
-    .eq("id", id)
-    .single();
-
-  if (fetchError || !atual) {
-    return NextResponse.json({ error: "Agendamento não encontrado." }, { status: 404 });
-  }
-
-  const update: AppointmentUpdate = {};
-  if (status) update.status = status;
-  if (data) update.data = data;
-  if (horario) {
-    const { data: servico } = await supabase
-      .from("services")
-      .select("duracao_minutos")
-      .eq("id", atual.service_id)
-      .single();
-
-    const duracao = servico?.duracao_minutos ?? 40;
     const [h, m] = horario.split(":").map(Number);
     const total = h * 60 + m + duracao;
     const hh = Math.floor(total / 60).toString().padStart(2, "0");
     const mm = (total % 60).toString().padStart(2, "0");
+
+    update.data = data;
     update.hora_inicio = horario;
     update.hora_fim = `${hh}:${mm}`;
   }
@@ -80,6 +77,12 @@ export async function PATCH(
     .single();
 
   if (error) {
+    if (error.code === "23505" || error.code === "23P01") {
+      return NextResponse.json(
+        { error: "Esse horário conflita com outro agendamento." },
+        { status: 409 }
+      );
+    }
     return NextResponse.json({ error: "Não foi possível atualizar o agendamento." }, { status: 500 });
   }
 

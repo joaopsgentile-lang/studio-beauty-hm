@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
   const supabase = createAdminClient();
   const { data: servico, error: servicoError } = await supabase
     .from("services")
-    .select("ativo")
+    .select("ativo, duracao_minutos")
     .eq("id", servicoId)
     .single();
 
@@ -34,6 +34,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Serviço não encontrado" }, { status: 404 });
   }
 
-  const horarios = await getHorariosDisponiveis(data);
+  const horarios = await getHorariosDisponiveis(data, servico.duracao_minutos);
   return NextResponse.json({ horarios });
 }

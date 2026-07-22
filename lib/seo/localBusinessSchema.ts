@@ -8,10 +8,11 @@ export function getLocalBusinessSchema() {
     description: `Estúdio de design de sobrancelhas em ${BUSINESS.address.city}.`,
     url: "https://studiobeautyhm.com.br",
     telephone: `+${BUSINESS.whatsapp}`,
-    priceRange: "R$10-R$480",
+    priceRange: "R$35-R$480",
     address: {
       "@type": "PostalAddress",
-      streetAddress: BUSINESS.address.street,
+      // schema.org não tem campo de bairro dedicado; incluímos no logradouro para SEO local.
+      streetAddress: `${BUSINESS.address.street}, ${BUSINESS.address.neighborhood}`,
       addressLocality: "Santa Bárbara D'Oeste",
       addressRegion: "SP",
       addressCountry: "BR",

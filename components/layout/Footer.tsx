@@ -16,7 +16,9 @@ export function Footer() {
         <div className="text-sm text-foreground/70">
           <p className="font-medium text-foreground">Endereço</p>
           <p className="mt-2">{BUSINESS.address.street}</p>
-          <p>{BUSINESS.address.city}</p>
+          <p>
+            {BUSINESS.address.neighborhood} — {BUSINESS.address.city}
+          </p>
           <p className="mt-4 font-medium text-foreground">Horário</p>
           <p className="mt-2">{BUSINESS_HOURS.label}</p>
         </div>

@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Serviço não encontrado." }, { status: 404 });
   }
 
-  const disponiveis = await getHorariosDisponiveis(data);
+  const disponiveis = await getHorariosDisponiveis(data, servico.duracao_minutos);
   if (!disponiveis.includes(horario)) {
     return NextResponse.json(
       { error: "Esse horário não está mais disponível." },
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (insertError) {
-    if (insertError.code === "23505") {
+    if (insertError.code === "23505" || insertError.code === "23P01") {
       return NextResponse.json(
         { error: "Esse horário acabou de ser reservado por outra pessoa." },
         { status: 409 }

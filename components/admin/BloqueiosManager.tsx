@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Button } from "@/components/ui/Button";
-import { BUSINESS_HOURS, SLOT_DURATION_MINUTOS } from "@/lib/constants";
+import { BUSINESS_HOURS, AGENDA_STEP_MINUTOS } from "@/lib/constants";
 import {
   formatDateLabel,
   generateTimeSlots,
@@ -24,7 +24,7 @@ const saturdays = getUpcomingSaturdays(8);
 const slots = generateTimeSlots(
   BUSINESS_HOURS.abertura,
   BUSINESS_HOURS.fechamento,
-  SLOT_DURATION_MINUTOS
+  AGENDA_STEP_MINUTOS
 );
 // Limites válidos de horário: início dos slots + o horário de fechamento,
 // para permitir bloquear até o fim do expediente.

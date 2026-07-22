@@ -2,11 +2,11 @@ import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ServiceCard } from "@/components/ui/ServiceCard";
-import { BUSINESS, BUSINESS_HOURS } from "@/lib/constants";
+import { BUSINESS, BUSINESS_HOURS, PAYMENT_METHODS } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/server";
 
 const mapQuery = encodeURIComponent(
-  `${BUSINESS.address.street}, ${BUSINESS.address.city}`
+  `${BUSINESS.address.street}, ${BUSINESS.address.neighborhood}, ${BUSINESS.address.city}`
 );
 
 const DESTAQUES = ["design-personalizado", "brow-lamination", "micropigmentacao-fio-a-fio"];
@@ -69,7 +69,8 @@ export default async function HomePage() {
                 <strong className="text-foreground">12h de antecedência</strong>.
               </li>
               <li>
-                Pagamento em dinheiro, Pix ou cartão de crédito.
+                Pagamento em {PAYMENT_METHODS.join(", ")}. Valores parcelados
+                estão sujeitos às taxas da maquininha.
               </li>
             </ul>
           </div>
@@ -102,7 +103,7 @@ export default async function HomePage() {
             <SectionHeading
               eyebrow="Localização"
               title="Onde estamos"
-              description={`${BUSINESS.address.street} — ${BUSINESS.address.city}. Atendimento aos ${BUSINESS_HOURS.label.toLowerCase()}.`}
+              description={`${BUSINESS.address.street}, ${BUSINESS.address.neighborhood} — ${BUSINESS.address.city}. Atendimento aos ${BUSINESS_HOURS.label.toLowerCase()}.`}
             />
             <div className="mt-6">
               <Button

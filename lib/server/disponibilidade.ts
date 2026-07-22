@@ -1,38 +1,42 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { BUSINESS_HOURS, SLOT_DURATION_MINUTOS } from "@/lib/constants";
-import { generateTimeSlots } from "@/lib/utils/dates";
+import { BUSINESS_HOURS, AGENDA_STEP_MINUTOS } from "@/lib/constants";
+import { generateCandidateStarts, intervalosSeSobrepoe, timeToMinutes } from "@/lib/utils/dates";
 
 export function isSabado(dataIso: string) {
   const [ano, mes, dia] = dataIso.split("-").map(Number);
   return new Date(ano, mes - 1, dia).getDay() === 6;
 }
 
-export async function getHorariosDisponiveis(data: string) {
+// Considera a duração real do serviço: um horário só é oferecido se o
+// intervalo inteiro [início, início+duração) não colidir com nenhum
+// agendamento confirmado nem bloqueio manual da profissional.
+export async function getHorariosDisponiveis(data: string, duracaoMinutos: number) {
   const supabase = createAdminClient();
 
   const [{ data: agendamentos }, { data: bloqueios }] = await Promise.all([
     supabase
       .from("appointments")
-      .select("hora_inicio")
+      .select("hora_inicio, hora_fim")
       .eq("data", data)
       .neq("status", "cancelado"),
     supabase.from("blocked_slots").select("hora_inicio, hora_fim").eq("data", data),
   ]);
 
-  const ocupados = new Set((agendamentos ?? []).map((a) => a.hora_inicio.slice(0, 5)));
-  const bloqueiosList = bloqueios ?? [];
+  const ocupados = [...(agendamentos ?? []), ...(bloqueios ?? [])].map((o) => ({
+    inicio: timeToMinutes(o.hora_inicio.slice(0, 5)),
+    fim: timeToMinutes(o.hora_fim.slice(0, 5)),
+  }));
 
-  const todosOsSlots = generateTimeSlots(
+  const candidatos = generateCandidateStarts(
     BUSINESS_HOURS.abertura,
     BUSINESS_HOURS.fechamento,
-    SLOT_DURATION_MINUTOS
+    AGENDA_STEP_MINUTOS,
+    duracaoMinutos
   );
 
-  return todosOsSlots.filter((slot) => {
-    if (ocupados.has(slot)) return false;
-    const bloqueado = bloqueiosList.some(
-      (b) => b.hora_inicio.slice(0, 5) <= slot && slot < b.hora_fim.slice(0, 5)
-    );
-    return !bloqueado;
+  return candidatos.filter((horario) => {
+    const inicio = timeToMinutes(horario);
+    const fim = inicio + duracaoMinutos;
+    return !ocupados.some((o) => intervalosSeSobrepoe(inicio, fim, o.inicio, o.fim));
   });
 }

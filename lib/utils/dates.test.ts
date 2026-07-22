@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   formatDateLabel,
+  generateCandidateStarts,
   generateTimeSlots,
   getUpcomingSaturdays,
+  intervalosSeSobrepoe,
   parseDateKey,
   toDateKey,
 } from "./dates";
@@ -42,6 +44,36 @@ describe("generateTimeSlots", () => {
 
   it("não gera nenhum slot quando a duração é maior que a janela disponível", () => {
     expect(generateTimeSlots("15:30", "16:00", 40)).toEqual([]);
+  });
+});
+
+describe("generateCandidateStarts", () => {
+  it("respeita a duração real do serviço, não um slot fixo", () => {
+    // Micropigmentação (150min): último início possível é 13:30 (13:30+150=16:00)
+    const slots = generateCandidateStarts("07:00", "16:00", 40, 150);
+    expect(slots[0]).toBe("07:00");
+    expect(slots[slots.length - 1]).toBe("13:00");
+    expect(slots).not.toContain("13:40"); // 13:40 + 150min = 16:10, passaria do fechamento
+  });
+
+  it("serviço curto (35min) permite mais horários próximos do fechamento", () => {
+    const slots = generateCandidateStarts("07:00", "16:00", 40, 35);
+    expect(slots[slots.length - 1]).toBe("15:00");
+  });
+});
+
+describe("intervalosSeSobrepoe", () => {
+  it("detecta sobreposição parcial", () => {
+    // 09:00-11:30 vs 10:00-10:45 (em minutos desde 00:00)
+    expect(intervalosSeSobrepoe(540, 690, 600, 645)).toBe(true);
+  });
+
+  it("intervalos encostados (fim de um = início do outro) não se sobrepõem", () => {
+    expect(intervalosSeSobrepoe(540, 600, 600, 640)).toBe(false);
+  });
+
+  it("intervalos totalmente separados não se sobrepõem", () => {
+    expect(intervalosSeSobrepoe(540, 580, 700, 740)).toBe(false);
   });
 });
 

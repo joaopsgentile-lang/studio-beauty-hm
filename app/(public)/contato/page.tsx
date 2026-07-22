@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Button } from "@/components/ui/Button";
-import { BUSINESS, BUSINESS_HOURS } from "@/lib/constants";
+import { BUSINESS, BUSINESS_HOURS, PAYMENT_METHODS } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Contato",
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 const mapQuery = encodeURIComponent(
-  `${BUSINESS.address.street}, ${BUSINESS.address.city}`
+  `${BUSINESS.address.street}, ${BUSINESS.address.neighborhood}, ${BUSINESS.address.city}`
 );
 
 export default function ContatoPage() {
@@ -27,7 +27,7 @@ export default function ContatoPage() {
               <dd className="mt-1">
                 {BUSINESS.address.street}
                 <br />
-                {BUSINESS.address.city}
+                {BUSINESS.address.neighborhood} — {BUSINESS.address.city}
               </dd>
             </div>
             <div>
@@ -41,6 +41,10 @@ export default function ContatoPage() {
             <div>
               <dt className="font-medium text-foreground">Instagram</dt>
               <dd className="mt-1">{BUSINESS.instagramHandle}</dd>
+            </div>
+            <div>
+              <dt className="font-medium text-foreground">Formas de pagamento</dt>
+              <dd className="mt-1">{PAYMENT_METHODS.join(", ")}</dd>
             </div>
           </dl>
 

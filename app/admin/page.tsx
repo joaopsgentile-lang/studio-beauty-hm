@@ -1,5 +1,5 @@
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { BUSINESS_HOURS, SLOT_DURATION_MINUTOS } from "@/lib/constants";
+import { BUSINESS_HOURS, AGENDA_STEP_MINUTOS } from "@/lib/constants";
 import { formatDateLabel, generateTimeSlots, getUpcomingSaturdays, toDateKey } from "@/lib/utils/dates";
 import { createClient } from "@/lib/supabase/server";
 
@@ -8,7 +8,7 @@ const dataKey = toDateKey(proximoSabado);
 const slots = generateTimeSlots(
   BUSINESS_HOURS.abertura,
   BUSINESS_HOURS.fechamento,
-  SLOT_DURATION_MINUTOS
+  AGENDA_STEP_MINUTOS
 );
 
 export default async function AdminDashboardPage() {
@@ -18,7 +18,7 @@ export default async function AdminDashboardPage() {
     await Promise.all([
       supabase
         .from("appointments")
-        .select("cliente_id, service_id, hora_inicio")
+        .select("cliente_id, service_id, hora_inicio, hora_fim")
         .eq("data", dataKey)
         .eq("status", "confirmado"),
       supabase.from("blocked_slots").select("hora_inicio, hora_fim, motivo").eq("data", dataKey),
@@ -40,8 +40,9 @@ export default async function AdminDashboardPage() {
       <div className="mt-8 divide-y divide-foreground/10 overflow-hidden rounded-2xl border border-foreground/10 bg-white">
         {slots.map((slot) => {
           const agendamento = (agendamentos ?? []).find(
-            (a) => a.hora_inicio.slice(0, 5) === slot
+            (a) => a.hora_inicio.slice(0, 5) <= slot && slot < a.hora_fim.slice(0, 5)
           );
+          const inicioDoBloco = agendamento?.hora_inicio.slice(0, 5) === slot;
           const bloqueio = (bloqueios ?? []).find(
             (b) => b.hora_inicio.slice(0, 5) <= slot && slot < b.hora_fim.slice(0, 5)
           );
@@ -51,8 +52,9 @@ export default async function AdminDashboardPage() {
               <span className="w-16 font-medium text-foreground">{slot}</span>
               {agendamento ? (
                 <span className="flex-1 text-foreground/80">
-                  {nomePorClienteId.get(agendamento.cliente_id) ?? "Cliente"} —{" "}
-                  {nomePorServicoId.get(agendamento.service_id) ?? "Serviço"}
+                  {inicioDoBloco
+                    ? `${nomePorClienteId.get(agendamento.cliente_id) ?? "Cliente"} — ${nomePorServicoId.get(agendamento.service_id) ?? "Serviço"}`
+                    : "↳ continuação"}
                 </span>
               ) : bloqueio ? (
                 <span className="flex-1 text-foreground/40">
