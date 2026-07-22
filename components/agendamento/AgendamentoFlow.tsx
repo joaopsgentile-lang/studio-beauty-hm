@@ -106,6 +106,15 @@ export function AgendamentoFlow({
       }
 
       setConfirmado(true);
+      const link = buildWhatsappLink(
+        buildAgendamentoMensagem({
+          nome: nomeCliente || "cliente",
+          servico: servico.nome,
+          dataLabel: formatDateLabel(data),
+          horario,
+        })
+      );
+      window.open(link, "_blank");
     } catch {
       setErro("Não foi possível agendar. Tente novamente.");
     } finally {
@@ -134,11 +143,11 @@ export function AgendamentoFlow({
         <p className="mt-4 text-sm leading-relaxed text-foreground/70">
           {servico.nome} agendado para{" "}
           <strong className="text-foreground">{formatDateLabel(data)}</strong> às{" "}
-          <strong className="text-foreground">{horario}</strong>. Confirme pelo
-          WhatsApp para garantir seu horário.
+          <strong className="text-foreground">{horario}</strong>. Abrimos o WhatsApp
+          em outra aba para você confirmar — se não abriu, use o botão abaixo.
         </p>
         <div className="mt-8 flex flex-col items-center gap-3">
-          <Button href={link}>Confirmar no WhatsApp</Button>
+          <Button href={link}>Abrir WhatsApp</Button>
           <Button href="/minha-conta" variant="ghost">
             Ver meus agendamentos
           </Button>
